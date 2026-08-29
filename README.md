@@ -1,141 +1,118 @@
-# 🔐 Sistema de Gestão de Usuários - API REST Segura
+# Sentinela — Gestão Segura de Usuários
 
-## 📋 Objetivo do Projeto
+Aplicação acadêmica full-stack para demonstrar uma API REST segura, autenticação JWT e autorização por perfis (RBAC). O projeto usa um único monorepo npm, TypeScript estrito no frontend e no backend e banco SQLite reproduzível com Prisma.
 
-Aplicação web para gerenciamento de usuários com API REST segura, desenvolvida como projeto acadêmico. A solução implementa autenticação JWT, controle de acesso baseado em perfis (RBAC) e boas práticas de segurança.
+## Tecnologias
 
-## 🛠️ Tecnologias Utilizadas
+- Node.js 24 LTS e npm workspaces;
+- React 19 + Vite 8;
+- Express 5 + Zod;
+- Prisma + SQLite;
+- JWT HS256, bcrypt (12 rounds), Helmet, CORS e rate limit;
+- Vitest, Supertest, Testing Library e Playwright;
+- Biome para lint e formatação.
 
-### Back-end
-- **Node.js** - Runtime JavaScript
-- **Express** - Framework web
-### Back-end
-- **Node.js** - Runtime JavaScript
-- **Express** - Framework web
-- **sql.js (SQLite WebAssembly)** - Banco de dados relacional sem necessidade de compilação nativa
-- **jsonwebtoken** - Geração e validação de tokens JWT
-- **bcryptjs** - Hash seguro de senhas
-- **cors** - Middleware para Cross-Origin Resource Sharing
+## Execução rápida
 
-### Front-end
-- **HTML5** - Estrutura das páginas
-- **CSS3** - Estilização e responsividade
-- **JavaScript (ES6+)** - Lógica de interação e consumo da API
+Pré-requisito: Node.js 24 (a versão esperada está em `.nvmrc`).
 
-## 📁 Estrutura do Projeto
+```bash
+nvm use
+npm install
+npm run setup
+npm run dev
+```
+
+No desenvolvimento:
+
+- frontend: `http://localhost:5173`;
+- API: `http://localhost:3000/api`;
+- Swagger: `http://localhost:3000/api/docs`.
+
+O `setup` cria `backend/.env` com um segredo JWT aleatório, aplica as migrations e recria as credenciais das contas de demonstração. O arquivo existente nunca é sobrescrito.
+
+Para simular produção, o Express serve o build do React e a API na mesma porta:
+
+```bash
+npm run build
+npm start
+```
+
+Acesse `http://localhost:3000`.
+
+## Contas de demonstração
+
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Administrador | `admin@sistema.com` | `Admin@123` |
+| Operador | `operador@sistema.com` | `Operador@123` |
+| Cliente | `cliente@sistema.com` | `Cliente@123` |
+
+Essas credenciais existem somente para a apresentação local e não devem ser reutilizadas em produção.
+
+## Scripts
+
+| Comando | Finalidade |
+|---|---|
+| `npm run setup` | Gera ambiente local, aplica migrations e executa o seed |
+| `npm run dev` | Inicia API e interface com recarga automática |
+| `npm run build` | Compila frontend e backend |
+| `npm start` | Serve o build completo na porta configurada |
+| `npm run verify` | Executa lint, tipagem, testes e build |
+| `npm run test:e2e` | Valida no navegador os três perfis e gera evidências locais |
+| `npm audit` | Audita as dependências instaladas |
+
+Se o Chromium do Playwright ainda não estiver instalado, execute uma vez `npx playwright install chromium`.
+
+## Perfis e permissões
+
+| Operação | Administrador | Operador | Cliente |
+|---|:---:|:---:|:---:|
+| Listar todos | Sim | Sim | Não |
+| Consultar outro usuário | Sim | Sim | Não |
+| Consultar o próprio cadastro | Sim | Sim | Sim |
+| Criar usuário | Sim | Não | Não |
+| Editar nome/e-mail de admin | Sim | Não | Não |
+| Editar nome/e-mail de operador/cliente | Sim | Sim | Apenas o próprio |
+| Alterar perfil | Sim | Não | Não |
+| Excluir usuário | Sim | Não | Não |
+
+A API impede autoexclusão administrativa e qualquer rebaixamento ou exclusão que deixaria o sistema sem administrador. Em cada requisição protegida, o usuário é consultado novamente no banco; exclusões e mudanças de permissão têm efeito imediato mesmo que o JWT ainda não tenha expirado.
+
+## Segurança implementada
+
+- senhas armazenadas apenas como hash bcrypt, com 12 rounds por padrão;
+- JWT de uma hora com `sub`, `nome`, `perfil`, `iat`, `exp`, `iss` e `aud`;
+- segredo JWT obrigatório, aleatório e com no mínimo 32 caracteres;
+- token mantido em `sessionStorage` e enviado por `Authorization: Bearer`;
+- validação Zod estrita, normalização de e-mail e rejeição de campos desconhecidos;
+- consultas somente pelo Prisma e respostas sem hash ou stack trace;
+- Helmet/CSP, CORS restrito, JSON limitado a 32 KiB;
+- até cinco logins malsucedidos por IP a cada 15 minutos;
+- renderização segura do React, sem `dangerouslySetInnerHTML`;
+- logout automático diante de uma resposta `401`.
+
+## Estrutura
 
 ```text
 gestao-usuarios/
 ├── backend/
-│   ├── config/
-│   │   └── database.js           # Inicialização e persistência do SQLite
-│   ├── controllers/
-│   │   ├── auth.controller.js    # Login e geração de JWT
-│   │   └── usuarios.controller.js# CRUD de usuários e regras de negócio
-│   ├── middleware/
-│   │   ├── auth.js               # Verificação de tokens JWT
-│   │   └── rbac.js               # Controle de acesso por perfil
-│   ├── routes/
-│   │   ├── auth.routes.js        # Rotas de autenticação
-│   │   └── usuarios.routes.js    # Rotas de gerenciamento de usuários
-│   ├── package.json
-│   └── server.js                 # Inicialização do servidor Express
+│   ├── prisma/             # Schema, migration e seed
+│   └── src/                # API, autenticação, RBAC e testes
 ├── frontend/
-│   ├── css/
-│   │   └── style.css             # Estilização completa e responsiva
-│   ├── js/
-│   │   ├── api.js                # Cliente HTTP para a API
-│   │   ├── auth.js               # Gerenciamento de sessão/login
-│   │   └── dashboard.js          # Lógica da interface do dashboard
-│   ├── index.html                # Página de login
-│   └── dashboard.html            # Painel interativo com console visual
-└── docs/
-    └── documentacao-api.md       # Documentação acadêmica detalhada da API
+│   ├── public/             # Assets estáticos
+│   └── src/                # React, cliente HTTP e testes
+├── e2e/                    # Fluxos reais no navegador
+├── docs/                   # Contrato, Postman e roteiro acadêmico
+├── scripts/setup.mjs       # Preparação reproduzível
+└── package.json            # Comandos e workspaces
 ```
 
-## 🚀 Como Instalar
+## Documentos da entrega
 
-### Pré-requisitos
-- Node.js (versão 18 ou superior)
-- npm (incluído com o Node.js)
+- [Documentação acadêmica e da API](docs/documentacao-api.md)
+- [Coleção Postman](docs/gestao-usuarios.postman_collection.json)
+- [Roteiro de demonstração](docs/roteiro-demonstracao.md)
+- [Guia das evidências](docs/evidencias/README.md)
 
-### Passo a passo
-1. Clone ou extraia o projeto
-2. `cd gestao-usuarios/backend`
-3. `npm install`
-4. `npm start`
-5. Abra `http://localhost:3000` (ou a porta onde servir o frontend) no navegador para acessar a interface.
-
-## 🔑 Credenciais Padrão
-
-| Perfil | E-mail | Senha |
-|--------|--------|-------|
-| Administrador | admin@sistema.com | Admin@123 |
-
-## 🧪 Como Testar
-
-### Via Interface Web
-1. Acesse `http://localhost:3000` ou sirva o front-end via um servidor local.
-2. Faça login com as credenciais de administrador.
-3. Crie usuários com diferentes perfis.
-4. Faça logout e login com os novos usuários para testar restrições.
-
-### Via API (curl)
-
-Substitua `<SEU_TOKEN_AQUI>` pelo token JWT obtido no login.
-
-**Login**
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{"email":"admin@sistema.com", "senha":"Admin@123"}'
-```
-
-**Listar usuários (com token)**
-```bash
-curl -X GET http://localhost:3000/api/usuarios \
-     -H "Authorization: Bearer <SEU_TOKEN_AQUI>"
-```
-
-**Criar usuário (com token)**
-```bash
-curl -X POST http://localhost:3000/api/usuarios \
-     -H "Authorization: Bearer <SEU_TOKEN_AQUI>" \
-     -H "Content-Type: application/json" \
-     -d '{"nome":"Teste", "email":"teste@sistema.com", "senha":"123", "perfil":"cliente"}'
-```
-
-**Atualizar usuário (com token)**
-```bash
-curl -X PUT http://localhost:3000/api/usuarios/2 \
-     -H "Authorization: Bearer <SEU_TOKEN_AQUI>" \
-     -H "Content-Type: application/json" \
-     -d '{"nome":"Nome Alterado"}'
-```
-
-**Excluir usuário (com token)**
-```bash
-curl -X DELETE http://localhost:3000/api/usuarios/2 \
-     -H "Authorization: Bearer <SEU_TOKEN_AQUI>"
-```
-
-## 📊 Perfis de Acesso
-
-- **Administrador**: Possui acesso total e irrestrito, podendo gerenciar todos os usuários do sistema sem limitações.
-- **Operador**: Perfil intermediário que pode listar todos os usuários e editar seus dados, porém bloqueado para exclusão e criação de novos usuários.
-- **Cliente**: Acesso mais restritivo. Somente pode ler e editar os seus próprios dados básicos.
-
-## 🔒 Segurança
-
-O projeto utiliza práticas consolidadas de segurança:
-- Não armazenamento de senhas em texto puro (Hashes gerados com **bcrypt** e salt dinâmico).
-- Sessões protegidas por **JSON Web Tokens (JWT)**.
-- Autorização em nível de recurso e endpoint por middleware de checagem (Role-Based Access Control).
-- Proteção nativa contra injeção de SQL via consultas parametrizadas com prepared statements.
-- Imunidade a ataques clássicos CSRF por via de tokens declarativos enviados no cabeçalho HTTP (não através de cookies).
-
-## 📖 Documentação Completa
-
-O projeto inclui um documento acadêmico em profundidade discutindo modelagem, matriz de acesso RBAC, estratégias futuras como OAuth 2.0 e uma tabela de mitigação de vulnerabilidades comuns:
-
-🔗 [Acesse docs/documentacao-api.md para ler a Documentação Completa de API](docs/documentacao-api.md)
+O contrato executável também está disponível em `/api/openapi.json` e no Swagger UI em `/api/docs`.

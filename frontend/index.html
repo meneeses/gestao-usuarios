@@ -1,33 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Gestão de Usuários</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <div class="login-container">
-        <div class="login-card">
-            <h1 class="text-center mb-2">🔐 Sistema de Gestão de Usuários</h1>
-            <div id="login-error" class="alert alert-error hidden"></div>
-            <form id="login-form">
-                <div class="form-group">
-                    <label>E-mail</label>
-                    <input type="email" id="email" class="form-control" required placeholder="Digite seu e-mail">
-                </div>
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="senha" class="form-control" required placeholder="Digite sua senha">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%">Entrar</button>
-            </form>
-            <p class="text-center mt-2" style="color: #64748b; font-size: 0.875rem;">
-                Credenciais padrão: admin@sistema.com / Admin@123
-            </p>
-        </div>
-    </div>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-</body>
+    <meta name="description" content="Demonstração acadêmica de uma API REST segura com JWT e RBAC.">
+    <meta name="theme-color" content="#091526">
+    <meta property="og:title" content="Sentinela | Gestão Segura de Usuários">
+    <meta property="og:description" content="API REST acadêmica com JWT, RBAC e práticas de segurança.">
+    <meta property="og:image" content="http://localhost:3000/og.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Sentinela | Gestão Segura de Usuários</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

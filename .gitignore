@@ -1,20 +1,26 @@
-﻿# Dependências
+# Dependências e builds
 node_modules/
-backend/node_modules/
-package-lock.json
-backend/package-lock.json
+dist/
+coverage/
+playwright-report/
+test-results/
 
-# Banco de dados local
+# Bancos de dados locais e código gerado
 *.db
-*.sqlite
-*.sqlite3
+*.db-journal
+backend/src/generated/
 
-# Logs e arquivos de sistema
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Evidências geradas localmente
+docs/evidencias/*.png
+docs/evidencias/*.webp
+
+# Logs e sistema
 *.log
 npm-debug.log*
 .DS_Store
 Thumbs.db
-
-# Variáveis de ambiente
-.env
-.env.local

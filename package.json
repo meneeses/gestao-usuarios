@@ -1,0 +1,39 @@
+{
+  "name": "gestao-usuarios",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Aplicação acadêmica full-stack para gestão segura de usuários",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "concurrently -k -n API,WEB -c blue,cyan \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w frontend && npm run build -w backend",
+    "start": "npm run start -w backend",
+    "lint": "biome check .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "postinstall": "npm run db:generate -w backend"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.11",
+    "@playwright/test": "1.62.1",
+    "concurrently": "10.0.5",
+    "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true,
+    "esbuild@0.28.2": true,
+    "prisma@6.12.0": true,
+    "@prisma/engines@6.12.0": true,
+    "@prisma/client@6.12.0": true,
+    "@scarf/scarf": false
+  }
+}
